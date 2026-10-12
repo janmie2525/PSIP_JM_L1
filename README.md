@@ -2,3 +2,4 @@
 - JAN - Miński
 - Jan - warszawski
 - Stanisław - turecki
+- Marcin - miński
