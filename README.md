@@ -10,3 +10,4 @@
 - Julia - hajnowski
 - Dominik -koniński
 - Daniel - sochaczewski
+- Dawid - bocheński
