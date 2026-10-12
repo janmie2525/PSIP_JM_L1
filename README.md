@@ -7,3 +7,4 @@
 - Jakub - chełmski
 - Kacper - legnicki
 - Tymoteusz - toruński
+- Julia - hajnowski
