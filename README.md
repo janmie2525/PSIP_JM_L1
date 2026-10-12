@@ -9,3 +9,4 @@
 - Tymoteusz - toruński
 - Julia - hajnowski
 - Dominik -koniński
+- Daniel - sochaczewski
