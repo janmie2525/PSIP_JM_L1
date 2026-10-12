@@ -8,3 +8,4 @@
 - Kacper - legnicki
 - Tymoteusz - toruński
 - Julia - hajnowski
+- Dominik -koniński
