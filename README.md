@@ -1,2 +1,14 @@
 # PSIP_JM_L1
-- JAN - Miński
+- Jan - miński
+- Jan - warszawski
+- Stanisław - turecki
+- Marcin - miński
+- Bartek - radomszczański
+- Jakub - chełmski
+- Kacper - legnicki
+- Tymoteusz - toruński
+- Julia - hajnowski
+- Dominik -koniński
+- Daniel - sochaczewski
+- Dawid - bocheński
+- Michał - biłgorajski
