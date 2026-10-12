@@ -5,3 +5,4 @@
 - Marcin - miński
 - Bartek - radomszczański
 - Jakub - chełmski
+- Kacper - legnicki
