@@ -11,3 +11,4 @@
 - Dominik -koniński
 - Daniel - sochaczewski
 - Dawid - bocheński
+- Michał - biłgorajski
