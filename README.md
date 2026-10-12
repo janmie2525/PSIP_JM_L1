@@ -12,3 +12,4 @@
 - Daniel - sochaczewski
 - Dawid - bocheński
 - Michał - biłgorajski
+- Maciej - kutnowski
