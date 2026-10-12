@@ -6,3 +6,4 @@
 - Bartek - radomszczański
 - Jakub - chełmski
 - Kacper - legnicki
+- Tymoteusz - toruński
