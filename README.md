@@ -4,3 +4,4 @@
 - Stanisław - turecki
 - Marcin - miński
 - Bartek - radomszczański
+- Jakub - chełmski
