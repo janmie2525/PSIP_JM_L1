@@ -27,7 +27,7 @@ jobs:
           ENVIRONMENT: ${{ github.ref_name }}
         run: |
           docker compose \
-            -f docker-compose-remote.yml
+            -f docker-compose-remote.yml \
             -p remote-db-${{ github.ref_name }} \
             up -d --build
 
