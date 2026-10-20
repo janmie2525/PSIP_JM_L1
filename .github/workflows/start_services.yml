@@ -1,4 +1,5 @@
-name: Start Remote Database
+
+name: Start Remote Database and Process BDOT10K
 
 on:
   push:
@@ -14,24 +15,71 @@ jobs:
     environment:
       name: ${{ github.ref_name }}
 
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      ENVIRONMENT: ${{ github.ref_name }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start PostGIS
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-          ENVIRONMENT: ${{ github.ref_name }}
+      - name: Build and start services
+        shell: pwsh
         run: |
-          docker compose \
-            -f docker-compose-remote.yml \
-            -p remote-db-${{ github.ref_name }} \
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
             up -d --build
 
-      - name: Show running containers
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie uruchomic uslug Docker."
+          }
+
+          docker compose -f docker-compose-remote.yml -p $project ps
+
+      - name: Run complete processing pipeline
+        shell: pwsh
+        run: |
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            exec -T python python /app/run_pipeline.py
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Przetwarzanie danych zakonczylo sie bledem."
+          }
+
+      - name: Verify database results
+        shell: pwsh
+        run: |
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            exec -T postgis psql `
+            -U "$env:POSTGRES_USER" `
+            -d "$env:POSTGRES_DB" `
+            -c "SELECT resolution, COUNT(*) AS liczba_heksagonow FROM grid.bdot_aggregation GROUP BY resolution ORDER BY resolution;"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie zweryfikowac wynikow w bazie."
+          }
+
+      - name: Show running containers and volumes
+        shell: pwsh
         run: |
           docker ps
-          docker volume ls | grep remote-db || true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie wyswietlic kontenerow."
+          }
+
+          docker volume ls

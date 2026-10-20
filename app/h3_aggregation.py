@@ -1,13 +1,16 @@
-﻿import psycopg2
+﻿
+import os
+
+import psycopg2
 from psycopg2 import sql
 
 
 DB_CONFIG = {
-    "host": "postgis",
-    "port": 5432,
-    "dbname": "psip",
-    "user": "psip",
-    "password": "psip",
+    "host": os.getenv("PGHOST", "postgis"),
+    "port": int(os.getenv("PGPORT", "5432")),
+    "dbname": os.getenv("PGDATABASE", "psip"),
+    "user": os.getenv("PGUSER", "psip"),
+    "password": os.getenv("PGPASSWORD", "psip"),
 }
 
 TARGET_TABLE = "bdot_aggregation"
@@ -21,7 +24,7 @@ def main():
             with conn.cursor() as cur:
                 cur.execute("CREATE SCHEMA IF NOT EXISTS grid")
 
-                # Utworzenie tabeli wynikowej na podstawie siatki H3.
+                # Odtworzenie tabeli wynikowej na podstawie siatki H3.
                 cur.execute(
                     sql.SQL("DROP TABLE IF EXISTS grid.{}").format(
                         sql.Identifier(TARGET_TABLE)
@@ -50,7 +53,7 @@ def main():
                     """).format(sql.Identifier(TARGET_TABLE))
                 )
 
-                # Odczyt wszystkich warstw BDOT10K.
+                # Pobranie warstw BDOT10k.
                 cur.execute("""
                     SELECT f_table_name, f_geometry_column, UPPER(type)
                     FROM geometry_columns
@@ -72,12 +75,15 @@ def main():
                         metric_column = f"area_{table_name}_m2"
                         expression = sql.SQL("""
                             COALESCE(
-                                SUM(ST_Area(
-                                    ST_Intersection(h.geom, b.{})
-                                )),
+                                SUM(
+                                    ST_Area(
+                                        ST_Intersection(h.geom, b.{})
+                                    )
+                                ),
                                 0
                             )
                         """).format(sql.Identifier(geom_column))
+
                         description = "powierzchnia [m2]"
                         column_type = "DOUBLE PRECISION"
 
@@ -85,18 +91,22 @@ def main():
                         metric_column = f"length_{table_name}_m"
                         expression = sql.SQL("""
                             COALESCE(
-                                SUM(ST_Length(
-                                    ST_Intersection(h.geom, b.{})
-                                )),
+                                SUM(
+                                    ST_Length(
+                                        ST_Intersection(h.geom, b.{})
+                                    )
+                                ),
                                 0
                             )
                         """).format(sql.Identifier(geom_column))
+
                         description = "dlugosc [m]"
                         column_type = "DOUBLE PRECISION"
 
                     elif geom_type in ("POINT", "MULTIPOINT"):
                         metric_column = f"count_{table_name}"
                         expression = sql.SQL("COUNT(*)::bigint")
+
                         description = "liczba punktow"
                         column_type = "BIGINT"
 
@@ -107,7 +117,7 @@ def main():
                         )
                         continue
 
-                    # Osobna kolumna dla kazdej warstwy.
+                    # Dodanie kolumny z wynikiem.
                     cur.execute(
                         sql.SQL("""
                             ALTER TABLE grid.{}
@@ -119,7 +129,7 @@ def main():
                         )
                     )
 
-                    # Obliczenia dla kazdego heksagonu.
+                    # Obliczenie wartosci dla kazdego heksagonu.
                     aggregate_query = sql.SQL("""
                         SELECT
                             h.h3_index,
@@ -153,21 +163,27 @@ def main():
 
                     print(
                         f"OK: {table_name} -> "
-                        f"{metric_column} ({description})"
+                        f"{metric_column} ({description})",
+                        flush=True,
                     )
 
+                # Aktualizacja statystyk tabeli.
                 cur.execute(
                     sql.SQL("ANALYZE grid.{}").format(
                         sql.Identifier(TARGET_TABLE)
                     )
                 )
 
+                # Kontrola liczby heksagonow.
                 cur.execute(
                     sql.SQL("SELECT COUNT(*) FROM grid.{}").format(
                         sql.Identifier(TARGET_TABLE)
                     )
                 )
-                print(f"Liczba heksagonow: {cur.fetchone()[0]}")
+
+                print(
+                    f"Liczba heksagonow: {cur.fetchone()[0]}"
+                )
 
                 cur.execute(sql.SQL("""
                     SELECT resolution, COUNT(*)
@@ -177,7 +193,9 @@ def main():
                 """).format(sql.Identifier(TARGET_TABLE)))
 
                 for resolution, count in cur.fetchall():
-                    print(f"Rozdzielczosc {resolution}: {count}")
+                    print(
+                        f"Rozdzielczosc {resolution}: {count}"
+                    )
 
                 print("Agregacja zakonczona.")
                 print("Tabela wynikowa: grid.bdot_aggregation")
