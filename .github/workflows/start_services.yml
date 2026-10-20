@@ -1,0 +1,37 @@
+name: Start Remote Database
+
+on:
+  push:
+    branches:
+      - env-test
+      - env-qa
+      - main
+
+jobs:
+  start-db:
+    runs-on: self-hosted
+
+    environment:
+      name: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start PostGIS
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          ENVIRONMENT: ${{ github.ref_name }}
+        run: |
+          docker compose \
+            -f docker-compose-remote.yml
+            -p remote-db-${{ github.ref_name }} \
+            up -d --build
+
+      - name: Show running containers
+        run: |
+          docker ps
+          docker volume ls | grep remote-db || true
