@@ -15,7 +15,6 @@ services:
 
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./data:/data:ro
 
     restart: unless-stopped
 
@@ -40,10 +39,6 @@ services:
       PGDATABASE: ${POSTGRES_DB}
       PGUSER: ${POSTGRES_USER}
       PGPASSWORD: ${POSTGRES_PASSWORD}
-
-    volumes:
-      - ./app:/app:ro
-      - ./data:/data:ro
 
     depends_on:
       postgis:
