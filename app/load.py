@@ -1,3 +1,4 @@
+
 import os
 import subprocess
 from pathlib import Path
@@ -5,9 +6,22 @@ from pathlib import Path
 shapefile = Path("/data/powiat.shp")
 
 if not shapefile.exists():
-    raise FileNotFoundError(f"Nie znaleziono pliku: {shapefile}")
+    raise FileNotFoundError(
+        f"Nie znaleziono pliku: {shapefile}"
+    )
 
-connection = "PG:host=postgis port=5432 dbname=psip user=psip"
+db_host = os.getenv("PGHOST", "postgis")
+db_port = os.getenv("PGPORT", "5432")
+db_name = os.getenv("PGDATABASE", "psip")
+db_user = os.getenv("PGUSER", "psip")
+db_password = os.getenv("PGPASSWORD", "psip")
+
+connection = (
+    f"PG:host={db_host} "
+    f"port={db_port} "
+    f"dbname={db_name} "
+    f"user={db_user}"
+)
 
 command = [
     "ogr2ogr",
@@ -20,7 +34,8 @@ command = [
 ]
 
 environment = os.environ.copy()
-environment["PGPASSWORD"] = "psip"
+environment["PGPASSWORD"] = db_password
 
 subprocess.run(command, env=environment, check=True)
-print("Załadowano powiat.shp do tabeli powiat w bazie psip.")
+
+print("Zaladowano powiat.shp do tabeli public.powiat.")

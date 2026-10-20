@@ -1,0 +1,51 @@
+
+services:
+  postgis:
+    build:
+      context: .
+      dockerfile: docker/postgis/Dockerfile
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  python:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+
+    command: ["tail", "-f", "/dev/null"]
+
+    environment:
+      PGHOST: postgis
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: remote-db-${ENVIRONMENT}-pgdata

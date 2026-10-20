@@ -1,0 +1,77 @@
+
+name: Stop Remote Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Srodowisko do zatrzymania"
+        required: true
+        default: env-test
+        type: choice
+        options:
+          - env-test
+          - env-qa
+          - main
+
+permissions:
+  contents: read
+
+jobs:
+  stop-db:
+    runs-on: self-hosted
+
+    environment:
+      name: ${{ inputs.target_environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_environment }}
+
+      - name: Stop services without deleting data
+        shell: pwsh
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          ENVIRONMENT: ${{ inputs.target_environment }}
+        run: |
+          $project = "remote-db-$($env:ENVIRONMENT)"
+
+          Write-Host "Zatrzymywanie srodowiska: $($env:ENVIRONMENT)"
+          Write-Host "Projekt Docker Compose: $project"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            stop
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie zatrzymac srodowiska."
+          }
+
+      - name: Verify environment containers
+        shell: pwsh
+        env:
+          ENVIRONMENT: ${{ inputs.target_environment }}
+        run: |
+          $project = "remote-db-$($env:ENVIRONMENT)"
+
+          $containers = docker ps -a `
+            --filter "label=com.docker.compose.project=$project" `
+            --format "{{.Names}} {{.Status}}"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie sprawdzic kontenerow."
+          }
+
+          if ($containers) {
+            Write-Host "Kontenery srodowiska:"
+            $containers
+          }
+          else {
+            Write-Host "Nie znaleziono kontenerow dla $project."
+          }
