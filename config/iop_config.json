@@ -1,0 +1,63 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5434,
+    "dbname": "psip",
+    "user": "psip",
+    "password": "psip",
+    "source_table": "grid.bdot_aggregation",
+    "result_table": "grid.iop_test"
+  },
+  "weights": {
+    "k_land": 1.6,
+    "k_hydro": 1.2,
+    "k_roads": 0.8,
+    "k_buildings": 0.4
+  },
+  "land_classes": {
+    "area_ot_ptgn_a_m2": -0.2,
+    "area_ot_ptkm_a_m2": 0.0,
+    "area_ot_ptlz_a_m2": -0.8,
+    "area_ot_ptnz_a_m2": -0.5,
+    "area_ot_ptpl_a_m2": 0.0,
+    "area_ot_ptrk_a_m2": -0.6,
+    "area_ot_ptso_a_m2": -0.5,
+    "area_ot_pttr_a_m2": 0.6,
+    "area_ot_ptut_a_m2": -0.3,
+    "area_ot_ptwp_a_m2": 0.0,
+    "area_ot_ptwz_a_m2": -0.7,
+    "area_ot_ptzb_a_m2": 0.0
+  },
+  "hydro": {
+    "water_area_column": "area_ot_ptwp_a_m2",
+    "wetland_area_columns": [
+      "area_ot_oimk_a_m2"
+    ],
+    "reed_area_columns": [
+      "area_ot_oisz_a_m2"
+    ],
+    "river_length_column": "length_ot_swrs_l_m",
+    "channel_length_column": "length_ot_swkn_l_m",
+    "ditch_length_column": "length_ot_swrm_l_m",
+    "water_area_threshold": 0.2,
+    "wetland_area_threshold": 0.2,
+    "reed_area_threshold": 0.2,
+    "stream_density_threshold_km_per_km2": 5.0,
+    "ditch_factor": 0.25
+  },
+  "roads": {
+    "length_column": "length_ot_skdr_l_m",
+    "saturation_density_km_per_km2": 10.0
+  },
+  "buildings": {
+    "area_column": "area_ot_bubd_a_m2",
+    "saturation_area_share": 0.2
+  },
+  "coverage": {
+    "analysis_area_column": "area_ot_adja_a_m2",
+    "low_coverage_threshold": 0.1,
+    "land_area_tolerance_fraction": 0.05,
+    "coverage_overflow_tolerance_fraction": 0.02
+  },
+  "equal_area_srid": 6933
+}
