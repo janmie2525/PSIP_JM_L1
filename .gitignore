@@ -4,3 +4,5 @@
 *.bak
 *.dump
 scripts/fix_*.py
+
+outputs/
