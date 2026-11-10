@@ -226,8 +226,9 @@ class PSIPGISApp:
         self.layer_list.bind("<Button-3>", self.show_layer_context_menu)
         row = ttk.Frame(sidebar)
         row.pack(fill=tk.X, pady=(7, 0))
-        ttk.Button(row, text="Pokaż/ukryj", command=self.toggle_selected_layer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 3))
-        ttk.Button(row, text="Usuń", command=self.remove_selected_layer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(3, 0))
+        ttk.Button(row, text="Pokaż/ukryj", command=self.toggle_selected_layer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        ttk.Button(row, text="Przybliż do", command=self.zoom_to_selected_layer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(row, text="Usuń", command=self.remove_selected_layer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
 
         self.map_title = ttk.Label(map_frame, text="Widok mapy", font=("Segoe UI", 11, "bold"))
         self.map_title.pack(anchor=tk.W, pady=(0, 4))
