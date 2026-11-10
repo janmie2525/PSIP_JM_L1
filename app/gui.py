@@ -181,7 +181,7 @@ class PSIPGISApp:
 
         layer_menu = tk.Menu(menu, tearoff=False)
         layer_menu.add_command(label="Dodaj dane…", command=self.add_data_dialog)
-        layer_menu.add_command(label="UsuĹ„ zaznaczonÄ… warstwę", command=self.remove_selected_layer)
+        layer_menu.add_command(label="Usuń zaznaczoną warstwę", command=self.remove_selected_layer)
         menu.add_cascade(label="Warstwy", menu=layer_menu)
 
         help_menu = tk.Menu(menu, tearoff=False)
@@ -352,8 +352,8 @@ class PSIPGISApp:
             ("Host", "host"),
             ("Port", "port"),
             ("Baza danych", "dbname"),
-            ("UĹĽytkownik", "user"),
-            ("HasĹ‚o", "password"),
+            ("Użytkownik", "user"),
+            ("Hasło", "password"),
         ]
         vars_by_key = {}
         for r, (label, key) in enumerate(fields):
