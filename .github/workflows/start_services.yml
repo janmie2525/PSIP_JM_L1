@@ -1,0 +1,85 @@
+
+name: Start Remote Database and Process BDOT10K
+
+on:
+  push:
+    branches:
+      - env-test
+      - env-qa
+      - main
+
+jobs:
+  start-db:
+    runs-on: self-hosted
+
+    environment:
+      name: ${{ github.ref_name }}
+
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      ENVIRONMENT: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start services
+        shell: pwsh
+        run: |
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            up -d --build
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie uruchomic uslug Docker."
+          }
+
+          docker compose -f docker-compose-remote.yml -p $project ps
+
+      - name: Run complete processing pipeline
+        shell: pwsh
+        run: |
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            exec -T python python /app/run_pipeline.py
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Przetwarzanie danych zakonczylo sie bledem."
+          }
+
+      - name: Verify database results
+        shell: pwsh
+        run: |
+          $project = "remote-db-${{ github.ref_name }}"
+
+          docker compose `
+            -f docker-compose-remote.yml `
+            -p $project `
+            exec -T postgis psql `
+            -U "$env:POSTGRES_USER" `
+            -d "$env:POSTGRES_DB" `
+            -c "SELECT resolution, COUNT(*) AS liczba_heksagonow FROM grid.bdot_aggregation GROUP BY resolution ORDER BY resolution;"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie zweryfikowac wynikow w bazie."
+          }
+
+      - name: Show running containers and volumes
+        shell: pwsh
+        run: |
+          docker ps
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Nie udalo sie wyswietlic kontenerow."
+          }
+
+          docker volume ls
