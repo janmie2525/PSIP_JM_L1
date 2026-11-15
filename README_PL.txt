@@ -17,7 +17,7 @@ KROKI W POWERSHELL
    Zgódź się na scalenie folderów scripts, config, tests, outputs (jeśli zapyta).
 
 2. Zainstaluj brakującą bibliotekę, jeśli nie jest zainstalowana:
-   py -3.12 -m pip install psycopg2-binary
+   py -3.12 -m pip install psycopg2-binary shapely matplotlib pillow pyproj pyshp
 
 3. Przejdź do projektu:
    cd C:\Users\janmi\PycharmProjects\PSIP_JM_L1

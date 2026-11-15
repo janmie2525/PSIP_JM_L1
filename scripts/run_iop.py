@@ -37,11 +37,12 @@ def load_config(path: Path) -> dict[str, Any]:
 
     weights = cfg["weights"]
     if set(weights) != {"k_land", "k_hydro", "k_roads", "k_buildings"}:
-        raise ValueError("Konfiguracja musi zawierać dokładnie cztery wagi Ki.")
-    if any(not math.isfinite(float(v)) or float(v) <= 0 for v in weights.values()):
-        raise ValueError("Wszystkie wagi muszą być dodatnie i skończone.")
-    if not math.isclose(sum(map(float, weights.values())), 4.0, abs_tol=1e-9):
-        raise ValueError("Suma wag musi wynosić 4 zgodnie z przyjętym wzorem.")
+        raise ValueError("Konfiguracja musi zawiera? dok?adnie cztery wagi Ki.")
+    numeric_weights = [float(v) for v in weights.values()]
+    if any(not math.isfinite(v) or v < 0 for v in numeric_weights):
+        raise ValueError("Wagi musz? by? nieujemne i sko?czone.")
+    if sum(numeric_weights) <= 0:
+        raise ValueError("Suma wag musi by? wi?ksza od zera.")
 
     return cfg
 
@@ -118,12 +119,16 @@ def calculate_one(row: dict[str, Any], cfg: dict[str, Any]) -> dict[str, Any]:
     )
 
     weights = cfg["weights"]
+    weight_sum = sum(float(v) for v in weights.values())
+    if weight_sum <= 0:
+        raise ValueError("Suma wag musi by? wi?ksza od zera.")
+
     iop = (
         float(weights["k_land"]) * k_land
         + float(weights["k_hydro"]) * k_hydro
         + float(weights["k_roads"]) * k_roads
         + float(weights["k_buildings"]) * k_buildings
-    ) / 4.0
+    ) / weight_sum
 
     coverage = A / hex_area
     low_coverage = coverage < float(cfg["coverage"]["low_coverage_threshold"])
